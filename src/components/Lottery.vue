@@ -120,6 +120,7 @@ export default {
       this.$emit('showPrizePopup')
     },
     drawing() {
+      const { len } = this
       const canvas = document.querySelector('#wheelCanvas')
       const ctx = canvas.getContext('2d')
       // canvas自带width和height属性可以理解为分辨率，canvas里面只要涉及半径,translate等之类的操作
