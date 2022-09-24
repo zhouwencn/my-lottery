@@ -2,28 +2,36 @@
   <div id="app">
     <Lottery
       @startTurn="start"
-      :toRotate="toRotate"
-      :winPrize="winPrize"
+      :to-rotate="toRotate"
+      :win-prize="winPrize"
       :circle="6"
       :duration="4"
-      @showPrizePopup="showPrizePopup"
+      :check-lottery="checkLottery"
+      @show-prize-popup="showPrizePopup"
     />
   </div>
 </template>
 
 <script>
-import Lottery from "./components/Lottery.vue";
-
+import Lottery from './components/Lottery.vue'
+function getRandomInt(min, max) {
+  min = Math.ceil(min)
+  max = Math.floor(max)
+  return Math.floor(Math.random() * (max - min)) + min //不含最大值，含最小值
+}
 export default {
-  name: "App",
+  name: 'App',
   components: {
-    Lottery,
+    Lottery
   },
   data() {
     return {
       prizeList: [],
       toRotate: false,
-      winPrize: {}
+      winPrize: {
+        prizeId: 1,
+        index: 0 // 增加一个index来防止watch的值没有变，不触发的问题
+      }
     }
   },
   created() {
@@ -32,20 +40,33 @@ export default {
   methods: {
     start() {
       new Promise((resolve) => {
-        // 子组件点击抽奖，之后调用接口请求拿到中将奖品传给子组件， toRotate变为true
+        // 子组件点击抽奖，之后调用接口请求拿到中将奖品传给子组件
         setTimeout(() => {
-          this.winPrize.prizeId = 5;
-          this.toRotate = true;
-          resolve();
-        }, 1000);
-      });
+          resolve({
+            prizeId: getRandomInt(1, 6),
+            index: Date.now()
+          })
+        }, 1000)
+      }).then((res) => {
+        this.winPrize.prizeId = res.prizeId
+        this.winPrize.index = res.index
+      })
     },
     showPrizePopup() {
-      alert("抽到了");
-      this.toRotate = false;
+      alert('抽到了')
+      // this.toRotate = false;
     },
-  },
-};
+    checkLottery() {
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(true)
+        }, 300)
+      }).then((res) => {
+        this.toRotate = res
+      })
+    }
+  }
+}
 </script>
 
 <style>
