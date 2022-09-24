@@ -100,7 +100,7 @@ export default {
     // 监听转盘的webkitTransitionEnd事件
     this.$refs.turntable.addEventListener(
       'webkitTransitionEnd',
-      this.init,
+      this.popWinInfo,
       false
     )
     this.drawing()
@@ -116,11 +116,10 @@ export default {
       this.$emit('startTurn')
     },
     //弹出中奖弹框
-    init() {
+    popWinInfo() {
       this.$emit('showPrizePopup')
     },
     drawing() {
-      const { len } = this
       const canvas = document.querySelector('#wheelCanvas')
       const ctx = canvas.getContext('2d')
       // canvas自带width和height属性可以理解为分辨率，canvas里面只要涉及半径,translate等之类的操作
@@ -129,6 +128,11 @@ export default {
       const height = canvas.height
       // 计算出每一份应该旋转的角度
       const baseAngle = (Math.PI * 2) / len
+      this.drawTurnTableBackGround(ctx, width, height, baseAngle)
+      this.drawImgAndText(ctx, width, height, baseAngle)
+    },
+    drawTurnTableBackGround(ctx, width, height, baseAngle) {
+      const { len } = this
       // ctx.clearRect(0, 0, width, height); //去掉背景默认的黑色，可写可不写
       ctx.strokeStyle = 'RGBA(249, 228, 178, 1)' //设置画图线的颜色，这样用扇形拼出来的园的一些弧线或者半径就不会有一些黑色的线条
       const colors = ['RGBA(255, 243, 211, 1)', 'RGBA(255, 250, 237, 1)']
@@ -163,6 +167,9 @@ export default {
         ctx.fill()
         ctx.restore()
       }
+    },
+    drawImgAndText(ctx, width, height, baseAngle) {
+      const { len } = this
       // 设置填充文字和图片的属性
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
@@ -228,21 +235,17 @@ export default {
         const prizeId = nval.prizeId
         // 因为抽奖之后不用回正可以连续点击抽奖，所以每次抽奖之前先做一下回正操作
         total -= needRotate
-        if (this.toRotate && prizeId) {
-          if (prizeId >= 0) {
-            const { len, circle, duration } = this
-            const index = this.prizeList.findIndex(
-              (item) => item.id === prizeId
-            )
-            needRotate = 360 - index * (360 / len)
-            total += 360 * circle + needRotate
-            this.rotateRound = {
-              transform: `rotate(${total}deg)`,
-              transition: `all ${duration}s`
-            }
-          } else {
-            alert('抽奖失败')
+        if (prizeId >= 0) {
+          const { len, circle, duration } = this
+          const index = this.prizeList.findIndex((item) => item.id === prizeId)
+          needRotate = 360 - index * (360 / len)
+          total += 360 * circle + needRotate
+          this.rotateRound = {
+            transform: `rotate(${total}deg)`,
+            transition: `all ${duration}s`
           }
+        } else {
+          alert('抽奖失败')
         }
       },
       deep: true
